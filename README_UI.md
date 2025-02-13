@@ -50,7 +50,7 @@
 
 **For interactive websites**:
 - We have many existing utility functions in Selenium for clicking buttons, entering text in boxes, selecting dropdowns, etc. These will be useful for navigating lots of menu options to get to data download options pretty easily.
-- Use explicit waits using `WebDriverWait` to wait only until elements become clickable (see Python User Group tutorial [here](https://ui-research.github.io/python-at-urban/content/web-scraping-dynamic.html)
+- Use explicit waits using `WebDriverWait` to wait only until elements become clickable (see Python User Group tutorial [here](https://ui-research.github.io/python-at-urban/content/web-scraping-dynamic.html) for more information on what a `Wait` is in a web scraping context.
 - Start by writing code to successfully navigate the menu for one option, *then* put that code into a function that can be iterated over all of the menu options you want.
 
 **Other suggestions**:
