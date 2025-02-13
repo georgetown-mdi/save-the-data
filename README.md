@@ -20,3 +20,18 @@ A fork of [UI-Research/data-preservation-public](https://github.com/UI-Research/
 ## Technical Guidance
 
 [Follow Urban Institute's README](README_UI.md)
+
+### Saving
+
+GCP Bucket for saving: https://console.cloud.google.com/storage/browser/save_the_data
+
+1. copy the `json.key` from the `resources` folder in the bucket
+
+2. update the constants in the [save_to_bucket script](output/save_to_bucket.py) to point to your local files as directed.
+
+2. Run the script
+
+```py
+python -m output.save_to_bucket
+```
+3. check your data in the bucket listed above
