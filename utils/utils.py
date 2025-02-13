@@ -25,7 +25,7 @@ def create_logger(file_path, resource_name):
 
     Parameters:
     file_path: The file path where the log folder and accompanying files should be saved; should be same as the script's location.
-    resource_name: The name of the logger - by convention, can choose the name of the script to keep things organized.
+    resource_name: The name of the logger - by convention, can choose the name of the script
 
     
     Returns:
