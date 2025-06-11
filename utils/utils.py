@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import logging
 import os
+import pandas as pd
+from typing import List, Tuple, Union, Optional
 import re
 import requests
 from selenium import webdriver
@@ -377,3 +379,84 @@ def get_href(identifier, driver, by=By.XPATH):
     element_clickable = EC.element_to_be_clickable((by, identifier))
     element = WebDriverWait(driver, timeout=15).until(element_clickable)
     return element.get_attribute('href')
+
+
+
+def check_valid_urls(
+    urls: Union[List[str], pd.DataFrame, str],
+    url_column: Optional[str] = None,
+    export: bool = False,
+    export_path: Optional[str] = None
+) -> Tuple[List[str], List[Tuple[str, str]]]:
+    """
+    Check the validity of a list of URLs.
+
+    Parameters:
+        urls (list, DataFrame, or str): List of URLs, a DataFrame containing URLs, or a file path (CSV/Excel).
+        url_column (str, optional): Column name containing URLs if a DataFrame or file is provided.
+        export (bool, optional): If True, writes the valid and invalid links to a file.
+        export_path (str, optional): Path to export the results. Required if export is True.
+
+    Returns:
+        tuple: (valid_links, invalid_links)
+            valid_links: List of valid URLs.
+            invalid_links: List of tuples (URL, error/status).
+
+    Example usage:
+        check_valid_urls(['https://www.google.com', 'https://invalid.url'], export=True, export_path='results.txt')
+        check_valid_urls('my_urls.xlsx', url_column='url')
+    """
+    # Load URLs from different input types
+    if isinstance(urls, str):
+        if urls.endswith('.csv'):
+            df = pd.read_csv(urls)
+        elif urls.endswith(('.xls', '.xlsx')):
+            df = pd.read_excel(urls)
+        else:
+            raise ValueError("Unsupported file type. Use CSV or Excel.")
+        if not url_column:
+            raise ValueError("Please specify the url_column when providing a file path or DataFrame.")
+        links = df[url_column].dropna().tolist()
+    elif isinstance(urls, pd.DataFrame):
+        if not url_column:
+            raise ValueError("Please specify the url_column when providing a DataFrame.")
+        links = urls[url_column].dropna().tolist()
+    elif isinstance(urls, list):
+        links = [u for u in urls if pd.notna(u)]
+    else:
+        raise ValueError("Input must be a list of URLs, a DataFrame, or a file path.")
+
+    valid_links = []
+    invalid_links = []
+
+    for link in links:
+        try:
+            print(f"Checking link: {link}")
+            response = requests.head(link, allow_redirects=True, timeout=10)
+            if response.status_code == 200:
+                valid_links.append(link)
+            else:
+                invalid_links.append((link, str(response.status_code)))
+        except requests.RequestException as e:
+            invalid_links.append((link, str(e)))
+
+    print("Valid Links:")
+    for valid_link in valid_links:
+        print(valid_link)
+
+    print("\nInvalid Links:")
+    for invalid_link, error in invalid_links:
+        print(f"{invalid_link} - {error}")
+
+    if export:
+        if not export_path:
+            raise ValueError("Please specify export_path if export is True.")
+        with open(export_path, "w") as file:
+            file.write("Valid Links:\n")
+            for link in valid_links:
+                file.write(link + "\n")
+            file.write("\nInvalid Links:\n")
+            for link, error in invalid_links:
+                file.write(f"{link} - {error}\n")
+
+    return valid_links, invalid_links
